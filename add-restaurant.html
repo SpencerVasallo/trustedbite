@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Restaurant - TrustedBite</title>
+    
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WR8VMQJETK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-WR8VMQJETK');
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            color: #1A1A1A;
+        }
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        @media (max-width: 640px) {
+            .container {
+                margin: 20px auto;
+                padding: 30px 20px;
+                max-width: 95%;
+            }
+        }
+        h1 {
+            color: #1B5E20;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #616161;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #1A1A1A;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            cursor: pointer;
+        }
+        .checkbox-item label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #388E3C;
+        }
+        button:disabled {
+            background: #9E9E9E;
+            cursor: not-allowed;
+        }
+        .link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #616161;
+        }
+        .link a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        /* Toast */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        @media (max-width: 640px) {
+            #toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+            }
+        }
+        .toast {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+        @media (max-width: 640px) {
+            .toast {
+                min-width: auto;
+                width: 100%;
+            }
+        }
+        .toast.success { border-left: 4px solid #4CAF50; }
+        .toast.error { border-left: 4px solid #F44336; }
+        .toast-icon { font-size: 24px; }
+        .toast-message { flex: 1; font-size: 14px; }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
+        }
+        .toast.removing {
+            animation: slideOut 0.3s ease-in forwards;
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    
+    <div class="container">
+        <h1>Add Restaurant</h1>
+        <p class="subtitle">Share a safe gluten-free dining option</p>
+        
+        <form id="restaurantForm">
+            <div class="form-group">
+                <label for="name">Restaurant Name *</label>
+                <input type="text" id="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="address">Address *</label>
+                <input type="text" id="address" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="city">City *</label>
+                <input type="text" id="city" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="state">State *</label>
+                <input type="text" id="state" required placeholder="e.g., CA, NY, TX" maxlength="2" style="text-transform: uppercase;">
+            </div>
+            
+            <div class="form-group">
+                <label>Safety Features:</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="dedicatedGF">
+                        <label for="dedicatedGF">Dedicated GF Facility</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="gfMenu">
+                        <label for="gfMenu">Has GF Menu</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="crossContact">
+                        <label for="crossContact">Handles Cross-Contact Properly</label>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" id="submitBtn">Add Restaurant</button>
+        </form>
+        
+        <p class="link">
+            <a href="restaurants.html">← Back to Restaurants</a>
+        </p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Toast system
+        function showToast(message, type) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? '✓' : '✕';
+            toast.innerHTML = `
+                <div class="toast-icon">${icon}</div>
+                <div class="toast-message">${message}</div>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('removing');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+        
+        // Supabase
+        const SUPABASE_URL = 'https://mvfwlwobnhtnenqfeksa.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12Zndsd29ibmh0bmVucWZla3NhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgxNzQ5NjEsImV4cCI6MjA4Mzc1MDk2MX0.Z16c-A1YHR41MeVIlqCILbJddLb5Gqr2YNF2RZqfFv4';
+        
+        const { createClient } = supabase;
+        const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Check if user is logged in
+        client.auth.getSession().then(({ data: { session } }) => {
+            if (!session) {
+                window.location.href = 'login.html';
+            }
+        });
+
+        const form = document.getElementById('restaurantForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Auto-uppercase state
+        document.getElementById('state').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const state = document.getElementById('state').value.toUpperCase();
+            const dedicatedGF = document.getElementById('dedicatedGF').checked;
+            const gfMenu = document.getElementById('gfMenu').checked;
+            const crossContact = document.getElementById('crossContact').checked;
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Adding...';
+            
+            try {
+                const { data: { user } } = await client.auth.getUser();
+                
+                const { data, error } = await client
+                    .from('restaurants')
+                    .insert([
+                        {
+                            name: name,
+                            address: address,
+                            city: city,
+                            state: state,
+                            has_dedicated_gf_facility: dedicatedGF,
+                            has_gf_menu: gfMenu,
+                            handles_cross_contact: crossContact,
+                            created_by: user.id
+                        }
+                    ])
+                    .select();
+                
+                if (error) throw error;
+                
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'add_restaurant', {
+                        restaurant_name: name
+                    });
+                }
+                
+                showToast('Restaurant added successfully!', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'restaurants.html';
+                }, 1000);
+                
+            } catch (error) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Add Restaurant';
+                
+                let message = error.message;
+                if (message.includes('Failed to fetch')) {
+                    message = 'Connection failed. Please check your internet.';
+                }
+                
+                showToast(message, 'error');
+            }
+        });
+    </script>
+</body>
+</html>

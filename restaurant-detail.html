@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Details - TrustedBite</title>
+    
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WR8VMQJETK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-WR8VMQJETK');
+    </script>
+    
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        /* Toast */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .toast {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+        .toast.success { border-left: 4px solid #4CAF50; }
+        .toast.error { border-left: 4px solid #F44336; }
+        .toast-icon { font-size: 24px; }
+        .toast-message { flex: 1; font-size: 14px; }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
+        }
+        .toast.removing {
+            animation: slideOut 0.3s ease-in forwards;
+        }
+        
+        .container-wide {
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .back-link {
+            color: #4CAF50;
+            text-decoration: none;
+            margin-bottom: 20px;
+            display: inline-block;
+            font-weight: 600;
+        }
+        .restaurant-header {
+            border-bottom: 2px solid #E0E0E0;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .restaurant-header h1 {
+            margin-bottom: 10px;
+            color: #1B5E20;
+        }
+        .address {
+            color: #616161;
+            margin-bottom: 15px;
+        }
+        .badge {
+            display: inline-block;
+            background: #E8F5E9;
+            color: #2E7D32;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            margin-right: 8px;
+            margin-top: 10px;
+        }
+        .ratings-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+            padding: 20px;
+            background: #F5F5F5;
+            border-radius: 8px;
+        }
+        .rating-box {
+            text-align: center;
+        }
+        .rating-box .score {
+            font-size: 36px;
+            font-weight: bold;
+            color: #1B5E20;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 30px 0 20px 0;
+            color: #1A1A1A;
+        }
+        .review-card {
+            background: #F8F9FA;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .review-actions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .btn-icon:hover {
+            background: #E0E0E0;
+        }
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .reviewer-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        .verified-badge {
+            background: #E8F5E9;
+            color: #2E7D32;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .review-ratings {
+            display: flex;
+            gap: 20px;
+        }
+        .review-form {
+            background: #F1F8F4;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 30px;
+        }
+        .rating-input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .star-rating {
+            display: flex;
+            gap: 10px;
+        }
+        .star {
+            font-size: 32px;
+            cursor: pointer;
+            color: #E0E0E0;
+            transition: color 0.2s;
+        }
+        .star.active,
+        .star:hover {
+            color: #FFA000;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            min-height: 120px;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-danger {
+            background: #F44336;
+        }
+        .btn-cancel {
+            background: #E0E0E0;
+            color: #1A1A1A;
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:10px;">Delete Review?</h3>
+            <p style="color:#616161;margin-bottom:20px;">Are you sure you want to delete this review? This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button class="btn-danger" onclick="confirmDelete()">Delete</button>
+                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container-wide">
+        <a href="restaurants.html" class="back-link">← Back to Restaurants</a>
+        
+        <div id="restaurantDetail">
+            <p>Loading...</p>
+        </div>
+        
+        <div id="ratingsSection" style="display: none;">
+            <div class="ratings-summary">
+                <div class="rating-box">
+                    <h3 style="font-size:14px;color:#616161;margin-bottom:8px;">🛡️ Safety Rating</h3>
+                    <div class="score" id="safetyScore">-</div>
+                    <p style="font-size:12px;color:#9E9E9E;margin-top:5px;" id="safetyCount">No reviews yet</p>
+                </div>
+                <div class="rating-box">
+                    <h3 style="font-size:14px;color:#616161;margin-bottom:8px;">⭐ Taste Rating</h3>
+                    <div class="score" id="tasteScore">-</div>
+                    <p style="font-size:12px;color:#9E9E9E;margin-top:5px;" id="tasteCount">No reviews yet</p>
+                </div>
+            </div>
+        </div>
+        
+        <h2 class="section-title">Reviews</h2>
+        <div id="reviewsList">
+            <p style="color:#9E9E9E;">No reviews yet. Be the first!</p>
+        </div>
+        
+        <div class="review-form" id="reviewFormContainer">
+            <h2 style="margin-top:0;" id="formTitle">Write a Review</h2>
+            
+            <form id="reviewForm">
+                <input type="hidden" id="editingReviewId">
+                <div class="rating-input-group">
+                    <div>
+                        <label>Safety Rating (1-5)</label>
+                        <div class="star-rating" id="safetyRatingInput">
+                            <span class="star" data-rating="1">★</span>
+                            <span class="star" data-rating="2">★</span>
+                            <span class="star" data-rating="3">★</span>
+                            <span class="star" data-rating="4">★</span>
+                            <span class="star" data-rating="5">★</span>
+                        </div>
+                        <input type="hidden" id="safetyRating" required>
+                    </div>
+                    
+                    <div>
+                        <label>Taste Rating (1-5)</label>
+                        <div class="star-rating" id="tasteRatingInput">
+                            <span class="star" data-rating="1">★</span>
+                            <span class="star" data-rating="2">★</span>
+                            <span class="star" data-rating="3">★</span>
+                            <span class="star" data-rating="4">★</span>
+                            <span class="star" data-rating="5">★</span>
+                        </div>
+                        <input type="hidden" id="tasteRating" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reviewText">Your Review *</label>
+                    <textarea id="reviewText" placeholder="Share details about cross-contact, staff knowledge, dedicated prep areas, etc." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Additional Safety Information:</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="separatePrep">
+                            <label for="separatePrep">Separate prep area for GF food</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="staffKnowledge">
+                            <label for="staffKnowledge">Staff knowledgeable about celiac/GF</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" id="submitBtn">Submit Review</button>
+                <button type="button" id="cancelBtn" class="btn-cancel" onclick="cancelEdit()" style="margin-left:10px;display:none;">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        function showToast(message, type) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? '✓' : '✕';
+            toast.innerHTML = `
+                <div class="toast-icon">${icon}</div>
+                <div class="toast-message">${message}</div>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('removing');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+        
+        const SUPABASE_URL = 'https://mvfwlwobnhtnenqfeksa.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12Zndsd29ibmh0bmVucWZla3NhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgxNzQ5NjEsImV4cCI6MjA4Mzc1MDk2MX0.Z16c-A1YHR41MeVIlqCILbJddLb5Gqr2YNF2RZqfFv4';
+        
+        const { createClient } = supabase;
+        const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let restaurantId;
+        let userId;
+        let safetyRatingValue = 0;
+        let tasteRatingValue = 0;
+        let reviewToDelete = null;
+
+        client.auth.getSession().then(({ data: { session } }) => {
+            if (!session) {
+                window.location.href = 'login.html';
+            } else {
+                userId = session.user.id;
+                loadRestaurantDetails();
+            }
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        restaurantId = urlParams.get('id');
+
+        if (!restaurantId) {
+            showToast('No restaurant selected', 'error');
+            setTimeout(() => window.location.href = 'restaurants.html', 1500);
+        }
+
+        async function loadRestaurantDetails() {
+            try {
+                const { data: restaurant, error } = await client
+                    .from('restaurants')
+                    .select('*')
+                    .eq('id', restaurantId)
+                    .single();
+
+                if (error) throw error;
+
+                document.getElementById('restaurantDetail').innerHTML = `
+                    <div class="restaurant-header">
+                        <h1>${restaurant.name}</h1>
+                        <p class="address">${restaurant.address}, ${restaurant.city}, ${restaurant.state}</p>
+                        ${restaurant.has_dedicated_gf_facility ? '<span class="badge">Dedicated GF Facility</span>' : ''}
+                        ${restaurant.has_gf_menu ? '<span class="badge">GF Menu</span>' : ''}
+                        ${restaurant.handles_cross_contact ? '<span class="badge">Handles Cross-Contact</span>' : ''}
+                    </div>
+                `;
+
+                loadReviews();
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        async function loadReviews() {
+            try {
+                const { data: reviews, error } = await client
+                    .from('reviews')
+                    .select('*')
+                    .eq('restaurant_id', restaurantId)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (reviews.length > 0) {
+                    const userIds = reviews.map(r => r.user_id);
+                    const { data: profiles } = await client
+                        .from('profiles')
+                        .select('id, first_name, is_verified')
+                        .in('id', userIds);
+
+                    const profileMap = {};
+                    profiles.forEach(p => {
+                        profileMap[p.id] = p;
+                    });
+
+                    const avgSafety = (reviews.reduce((sum, r) => sum + r.safety_rating, 0) / reviews.length).toFixed(1);
+                    const avgTaste = (reviews.reduce((sum, r) => sum + r.taste_rating, 0) / reviews.length).toFixed(1);
+
+                    document.getElementById('ratingsSection').style.display = 'block';
+                    document.getElementById('safetyScore').textContent = avgSafety;
+                    document.getElementById('tasteScore').textContent = avgTaste;
+                    document.getElementById('safetyCount').textContent = `${reviews.length} review${reviews.length !== 1 ? 's' : ''}`;
+                    document.getElementById('tasteCount').textContent = `${reviews.length} review${reviews.length !== 1 ? 's' : ''}`;
+
+                    document.getElementById('reviewsList').innerHTML = reviews.map(review => {
+                        const profile = profileMap[review.user_id] || { first_name: 'Anonymous', is_verified: false };
+                        const verifiedBadge = profile.is_verified 
+                            ? '<span class="verified-badge">✓ Verified</span>' 
+                            : '';
+                        
+                        const isOwner = review.user_id === userId;
+                        const actions = isOwner ? `
+                            <div class="review-actions">
+                                <button class="btn-icon" onclick="editReview('${review.id}')" title="Edit">✏️</button>
+                                <button class="btn-icon" onclick="deleteReview('${review.id}')" title="Delete">🗑️</button>
+                            </div>
+                        ` : '';
+                        
+                        return `
+                            <div class="review-card" id="review-${review.id}">
+                                ${actions}
+                                <div class="review-header">
+                                    <div class="reviewer-name">
+                                        <strong>${profile.first_name}</strong>
+                                        ${verifiedBadge}
+                                    </div>
+                                    <div class="review-ratings">
+                                        <span style="font-size:14px;">🛡️ Safety: <strong style="color:#1B5E20;">${review.safety_rating}/5</strong></span>
+                                        <span style="font-size:14px;">⭐ Taste: <strong style="color:#1B5E20;">${review.taste_rating}/5</strong></span>
+                                    </div>
+                                </div>
+                                <p style="color:#1A1A1A;line-height:1.6;margin-bottom:10px;">${review.review_text}</p>
+                                <div style="display:flex;gap:15px;font-size:12px;color:#9E9E9E;">
+                                    ${review.separate_prep_area ? '<span>✓ Separate prep area</span>' : ''}
+                                    ${review.staff_knowledgeable ? '<span>✓ Knowledgeable staff</span>' : ''}
+                                    <span>${new Date(review.created_at).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (error) {
+                console.error('Error loading reviews:', error);
+            }
+        }
+
+        async function editReview(reviewId) {
+            try {
+                const { data: review, error } = await client
+                    .from('reviews')
+                    .select('*')
+                    .eq('id', reviewId)
+                    .single();
+
+                if (error) throw error;
+
+                document.getElementById('formTitle').textContent = 'Edit Your Review';
+                document.getElementById('editingReviewId').value = reviewId;
+                document.getElementById('reviewText').value = review.review_text;
+                document.getElementById('separatePrep').checked = review.separate_prep_area;
+                document.getElementById('staffKnowledge').checked = review.staff_knowledgeable;
+                
+                setStarRating('safetyRatingInput', 'safetyRating', review.safety_rating, 'safety');
+                setStarRating('tasteRatingInput', 'tasteRating', review.taste_rating, 'taste');
+                
+                document.getElementById('submitBtn').textContent = 'Update Review';
+                document.getElementById('cancelBtn').style.display = 'inline-block';
+                
+                document.getElementById('reviewFormContainer').scrollIntoView({ behavior: 'smooth' });
+                showToast('Editing review', 'info');
+
+            } catch (error) {
+                showToast('Error loading review: ' + error.message, 'error');
+            }
+        }
+
+        function setStarRating(containerId, inputId, rating, ratingVar) {
+            if (ratingVar === 'safety') {
+                safetyRatingValue = rating;
+            } else {
+                tasteRatingValue = rating;
+            }
+            document.getElementById(inputId).value = rating;
+            
+            const container = document.getElementById(containerId);
+            const stars = container.querySelectorAll('.star');
+            stars.forEach((s, index) => {
+                if (index < rating) {
+                    s.classList.add('active');
+                } else {
+                    s.classList.remove('active');
+                }
+            });
+        }
+
+        function cancelEdit() {
+            document.getElementById('formTitle').textContent = 'Write a Review';
+            document.getElementById('editingReviewId').value = '';
+            document.getElementById('reviewForm').reset();
+            document.getElementById('submitBtn').textContent = 'Submit Review';
+            document.getElementById('cancelBtn').style.display = 'none';
+            
+            document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+            safetyRatingValue = 0;
+            tasteRatingValue = 0;
+            
+            showToast('Edit cancelled', 'info');
+        }
+
+        function deleteReview(reviewId) {
+            reviewToDelete = reviewId;
+            document.getElementById('deleteModal').classList.add('show');
+        }
+
+        async function confirmDelete() {
+            try {
+                const { error } = await client
+                    .from('reviews')
+                    .delete()
+                    .eq('id', reviewToDelete);
+
+                if (error) throw error;
+
+                showToast('Review deleted successfully', 'success');
+                closeModal();
+                loadReviews();
+
+            } catch (error) {
+                showToast('Error deleting review: ' + error.message, 'error');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            reviewToDelete = null;
+        }
+
+        function setupStarRating(containerId, inputId, ratingVar) {
+            const container = document.getElementById(containerId);
+            const input = document.getElementById(inputId);
+            const stars = container.querySelectorAll('.star');
+
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    const rating = parseInt(this.getAttribute('data-rating'));
+                    if (ratingVar === 'safety') {
+                        safetyRatingValue = rating;
+                    } else {
+                        tasteRatingValue = rating;
+                    }
+                    input.value = rating;
+
+                    stars.forEach((s, index) => {
+                        if (index < rating) {
+                            s.classList.add('active');
+                        } else {
+                            s.classList.remove('active');
+                        }
+                    });
+                });
+            });
+        }
+
+        setupStarRating('safetyRatingInput', 'safetyRating', 'safety');
+        setupStarRating('tasteRatingInput', 'tasteRating', 'taste');
+
+        const form = document.getElementById('reviewForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const editingId = document.getElementById('editingReviewId').value;
+            const safetyRating = document.getElementById('safetyRating').value;
+            const tasteRating = document.getElementById('tasteRating').value;
+            const reviewText = document.getElementById('reviewText').value;
+            const separatePrep = document.getElementById('separatePrep').checked;
+            const staffKnowledge = document.getElementById('staffKnowledge').checked;
+
+            if (!safetyRating || !tasteRating) {
+                showToast('Please select both safety and taste ratings', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = editingId ? 'Updating...' : 'Submitting...';
+
+            try {
+                const reviewData = {
+                    restaurant_id: restaurantId,
+                    user_id: userId,
+                    safety_rating: parseInt(safetyRating),
+                    taste_rating: parseInt(tasteRating),
+                    review_text: reviewText,
+                    separate_prep_area: separatePrep,
+                    staff_knowledgeable: staffKnowledge
+                };
+
+                let error;
+                if (editingId) {
+                    ({ error } = await client
+                        .from('reviews')
+                        .update(reviewData)
+                        .eq('id', editingId));
+                } else {
+                    ({ error } = await client
+                        .from('reviews')
+                        .insert([reviewData]));
+                }
+
+                if (error) throw error;
+
+                showToast(editingId ? 'Review updated successfully!' : 'Review submitted successfully!', 'success');
+                
+                cancelEdit();
+                
+                setTimeout(() => {
+                    loadReviews();
+                }, 500);
+
+            } catch (error) {
+                showToast(error.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = editingId ? 'Update Review' : 'Submit Review';
+            }
+        });
+    </script>
+</body>
+</html>

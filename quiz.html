@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safety Quiz - TrustedBite</title>
+    
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WR8VMQJETK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-WR8VMQJETK');
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            color: #1A1A1A;
+        }
+        .container {
+            max-width: 700px;
+            margin: 50px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1B5E20;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #616161;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .back-link {
+            color: #4CAF50;
+            text-decoration: none;
+            margin-bottom: 20px;
+            display: inline-block;
+            font-weight: 600;
+        }
+        .progress {
+            background: #E0E0E0;
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: #4CAF50;
+            height: 100%;
+            transition: width 0.3s;
+        }
+        .question-card {
+            margin-bottom: 30px;
+        }
+        .question-number {
+            color: #4CAF50;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1A1A1A;
+        }
+        .answer-option {
+            background: #F5F5F5;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .answer-option:hover {
+            background: #E8F5E9;
+            border-color: #4CAF50;
+        }
+        .answer-option.selected {
+            background: #E8F5E9;
+            border-color: #4CAF50;
+        }
+        button {
+            width: 100%;
+            background: #4CAF50;
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:disabled {
+            background: #9E9E9E;
+            cursor: not-allowed;
+        }
+        .result-card {
+            text-align: center;
+            padding: 40px;
+        }
+        .result-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        .result-score {
+            font-size: 48px;
+            font-weight: bold;
+            color: #1B5E20;
+            margin-bottom: 10px;
+        }
+        .result-message {
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+        
+        /* Toast */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .toast {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+        .toast.success { border-left: 4px solid #4CAF50; }
+        .toast.error { border-left: 4px solid #F44336; }
+        .toast.info { border-left: 4px solid #2196F3; }
+        .toast-icon { font-size: 24px; }
+        .toast-message { flex: 1; font-size: 14px; }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
+        }
+        .toast.removing {
+            animation: slideOut 0.3s ease-in forwards;
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    
+    <div class="container">
+        <a href="restaurants.html" class="back-link">← Back to Restaurants</a>
+        
+        <h1>🛡️ Safety Quiz</h1>
+        <p class="subtitle">Pass with 80% to become a Verified Reviewer</p>
+        
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div id="quizContent"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        function showToast(message, type) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = { success: '✓', error: '✕', info: 'ℹ' };
+            const icon = icons[type] || 'ℹ';
+            toast.innerHTML = `
+                <div class="toast-icon">${icon}</div>
+                <div class="toast-message">${message}</div>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('removing');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+        
+        const SUPABASE_URL = 'https://mvfwlwobnhtnenqfeksa.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12Zndsd29ibmh0bmVucWZla3NhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgxNzQ5NjEsImV4cCI6MjA4Mzc1MDk2MX0.Z16c-A1YHR41MeVIlqCILbJddLb5Gqr2YNF2RZqfFv4';
+        
+        const { createClient } = supabase;
+        const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let userId;
+        let currentQuestion = 0;
+        let answers = [];
+        let questions = [];
+
+        client.auth.getSession().then(({ data: { session } }) => {
+            if (!session) {
+                window.location.href = 'login.html';
+            } else {
+                userId = session.user.id;
+                loadQuiz();
+            }
+        });
+
+        async function loadQuiz() {
+            try {
+                const { data, error } = await client
+                    .from('quiz_questions')
+                    .select('*')
+                    .order('id');
+
+                if (error) throw error;
+
+                questions = data;
+                showToast('Quiz loaded! Good luck!', 'info');
+                showQuestion();
+
+            } catch (error) {
+                showToast('Error loading quiz: ' + error.message, 'error');
+            }
+        }
+
+        function showQuestion() {
+            if (currentQuestion >= questions.length) {
+                submitQuiz();
+                return;
+            }
+
+            const question = questions[currentQuestion];
+            const progress = ((currentQuestion / questions.length) * 100);
+            document.getElementById('progressBar').style.width = progress + '%';
+
+            const options = [
+                question.option_a,
+                question.option_b,
+                question.option_c,
+                question.option_d
+            ];
+
+            document.getElementById('quizContent').innerHTML = `
+                <div class="question-card">
+                    <div class="question-number">Question ${currentQuestion + 1} of ${questions.length}</div>
+                    <div class="question-text">${question.question_text}</div>
+                    ${options.map((opt, i) => `
+                        <div class="answer-option" onclick="selectAnswer('${String.fromCharCode(97 + i)}')">
+                            ${opt}
+                        </div>
+                    `).join('')}
+                </div>
+                <button onclick="nextQuestion()" id="nextBtn" disabled>Next Question</button>
+            `;
+        }
+
+        function selectAnswer(answer) {
+            answers[currentQuestion] = answer;
+            
+            document.querySelectorAll('.answer-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            showQuestion();
+        }
+
+        async function submitQuiz() {
+            document.getElementById('progressBar').style.width = '100%';
+            
+            let correctCount = 0;
+            questions.forEach((q, i) => {
+                if (answers[i] === q.correct_answer) {
+                    correctCount++;
+                }
+            });
+
+            const score = Math.round((correctCount / questions.length) * 100);
+            const passed = score >= 80;
+
+            try {
+                const { error } = await client
+                    .from('profiles')
+                    .update({
+                        is_verified: passed,
+                        quiz_score: score
+                    })
+                    .eq('id', userId);
+
+                if (error) throw error;
+
+                showResults(score, passed, correctCount, questions.length);
+
+            } catch (error) {
+                showToast('Error saving results: ' + error.message, 'error');
+            }
+        }
+
+        function showResults(score, passed, correct, total) {
+            const icon = passed ? '🎉' : '😔';
+            const message = passed 
+                ? 'Congratulations! You\'re now a Verified Reviewer!' 
+                : 'Not quite there yet. Study up and try again!';
+
+            if (passed) {
+                showToast('You passed! You\'re now verified!', 'success');
+                gtag('event', 'quiz_passed', { score: score });
+            } else {
+                showToast('You didn\'t pass this time. Try again!', 'error');
+            }
+
+            document.getElementById('quizContent').innerHTML = `
+                <div class="result-card">
+                    <div class="result-icon">${icon}</div>
+                    <div class="result-score">${score}%</div>
+                    <div class="result-message">${message}</div>
+                    <p style="color:#616161;margin-bottom:30px;">You got ${correct} out of ${total} questions correct.</p>
+                    ${passed 
+                        ? '<button onclick="window.location.href=\'restaurants.html\'">Go to Restaurants</button>'
+                        : '<button onclick="location.reload()">Try Again</button>'
+                    }
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
