@@ -226,15 +226,10 @@
 
         async function loadQuiz() {
             try {
-                console.log('Loading quiz questions...');
-                
                 const { data, error } = await client
                     .from('quiz_questions')
                     .select('*')
                     .order('id', { ascending: true });
-
-                console.log('Quiz data:', data);
-                console.log('Quiz error:', error);
 
                 if (error) throw error;
 
@@ -247,12 +242,7 @@
                 showQuestion();
 
             } catch (error) {
-                console.error('Error loading quiz:', error);
                 showToast('Error loading quiz: ' + error.message, 'error');
-                document.getElementById('quizContent').innerHTML = `
-                    <p style="color:#F44336;">Error: ${error.message}</p>
-                    <button onclick="window.location.href='restaurants.html'">Back to Restaurants</button>
-                `;
             }
         }
 
@@ -266,21 +256,18 @@
             const progress = ((currentQuestion / questions.length) * 100);
             document.getElementById('progressBar').style.width = progress + '%';
 
-            console.log('Current question:', question);
-
             document.getElementById('quizContent').innerHTML = `
                 <div class="question-card">
                     <div class="question-number">Question ${currentQuestion + 1} of ${questions.length}</div>
-                    <div class="question-text">${question.question_text || 'Question text missing'}</div>
-                    <div class="answer-option" data-answer="a">${question.option_a || 'Option A'}</div>
-                    <div class="answer-option" data-answer="b">${question.option_b || 'Option B'}</div>
-                    <div class="answer-option" data-answer="c">${question.option_c || 'Option C'}</div>
-                    <div class="answer-option" data-answer="d">${question.option_d || 'Option D'}</div>
+                    <div class="question-text">${question.question}</div>
+                    <div class="answer-option" data-answer="a">${question.option_a}</div>
+                    <div class="answer-option" data-answer="b">${question.option_b}</div>
+                    <div class="answer-option" data-answer="c">${question.option_c}</div>
+                    <div class="answer-option" data-answer="d">${question.option_d}</div>
                 </div>
                 <button onclick="nextQuestion()" id="nextBtn" disabled>Next Question</button>
             `;
 
-            // Add click handlers to answer options
             document.querySelectorAll('.answer-option').forEach(opt => {
                 opt.addEventListener('click', function() {
                     selectedAnswer = this.getAttribute('data-answer');

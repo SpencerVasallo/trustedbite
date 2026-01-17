@@ -362,6 +362,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        console.log('=== SCRIPT LOADED ===');
+        
         function showToast(message, type) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -393,19 +395,20 @@
         let tasteRatingValue = 0;
         let reviewToDelete = null;
 
-        // Get user session
         client.auth.getSession().then(({ data: { session } }) => {
+            console.log('Session:', session);
             if (!session) {
                 window.location.href = 'login.html';
             } else {
                 userId = session.user.id;
+                console.log('User ID:', userId);
                 loadRestaurantDetails();
             }
         });
 
-        // Get restaurant ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         restaurantId = urlParams.get('id');
+        console.log('Restaurant ID:', restaurantId);
 
         if (!restaurantId) {
             showToast('No restaurant selected', 'error');
@@ -439,12 +442,16 @@
         }
 
         async function loadReviews() {
+            console.log('=== LOADING REVIEWS ===');
             try {
                 const { data: reviews, error } = await client
                     .from('reviews')
                     .select('*')
                     .eq('restaurant_id', restaurantId)
                     .order('created_at', { ascending: false });
+
+                console.log('Reviews:', reviews);
+                console.log('Error:', error);
 
                 if (error) throw error;
 
@@ -476,10 +483,12 @@
                             : '';
                         
                         const isOwner = review.user_id === userId;
+                        console.log('Review ID:', review.id, 'Is Owner:', isOwner, 'Review User:', review.user_id, 'Current User:', userId);
+                        
                         const actions = isOwner ? `
                             <div class="review-actions">
-                                <button class="btn-icon" onclick="window.editReviewGlobal('${review.id}')" title="Edit">✏️</button>
-                                <button class="btn-icon" onclick="window.deleteReviewGlobal('${review.id}')" title="Delete">🗑️</button>
+                                <button class="btn-icon" data-review-id="${review.id}" data-action="edit" title="Edit">✏️</button>
+                                <button class="btn-icon" data-review-id="${review.id}" data-action="delete" title="Delete">🗑️</button>
                             </div>
                         ` : '';
                         
@@ -505,15 +514,33 @@
                             </div>
                         `;
                     }).join('');
+                    
+                    // Add event listeners to buttons
+                    document.querySelectorAll('[data-action="edit"]').forEach(btn => {
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const reviewId = this.getAttribute('data-review-id');
+                            console.log('EDIT BUTTON CLICKED:', reviewId);
+                            editReview(reviewId);
+                        });
+                    });
+                    
+                    document.querySelectorAll('[data-action="delete"]').forEach(btn => {
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const reviewId = this.getAttribute('data-review-id');
+                            console.log('DELETE BUTTON CLICKED:', reviewId);
+                            deleteReview(reviewId);
+                        });
+                    });
                 }
             } catch (error) {
                 console.error('Error loading reviews:', error);
             }
         }
 
-        // Make functions globally accessible
-        window.editReviewGlobal = async function(reviewId) {
-            console.log('Edit clicked for review:', reviewId);
+        async function editReview(reviewId) {
+            console.log('=== EDIT REVIEW FUNCTION ===', reviewId);
             try {
                 const { data: review, error } = await client
                     .from('reviews')
@@ -521,9 +548,10 @@
                     .eq('id', reviewId)
                     .single();
 
-                if (error) throw error;
+                console.log('Review data:', review);
+                console.log('Error:', error);
 
-                console.log('Review data loaded:', review);
+                if (error) throw error;
 
                 document.getElementById('formTitle').textContent = 'Edit Your Review';
                 document.getElementById('editingReviewId').value = reviewId;
@@ -544,13 +572,13 @@
                 console.error('Error in editReview:', error);
                 showToast('Error loading review: ' + error.message, 'error');
             }
-        };
+        }
 
-        window.deleteReviewGlobal = function(reviewId) {
-            console.log('Delete clicked for review:', reviewId);
+        function deleteReview(reviewId) {
+            console.log('=== DELETE REVIEW FUNCTION ===', reviewId);
             reviewToDelete = reviewId;
             document.getElementById('deleteModal').classList.add('show');
-        };
+        }
 
         function setStarRating(containerId, inputId, rating, ratingVar) {
             if (ratingVar === 'safety') {
@@ -572,6 +600,7 @@
         }
 
         document.getElementById('cancelBtn').addEventListener('click', function() {
+            console.log('=== CANCEL CLICKED ===');
             document.getElementById('formTitle').textContent = 'Write a Review';
             document.getElementById('editingReviewId').value = '';
             document.getElementById('reviewForm').reset();
@@ -586,7 +615,7 @@
         });
 
         document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
-            console.log('Confirm delete for:', reviewToDelete);
+            console.log('=== CONFIRM DELETE CLICKED ===', reviewToDelete);
             if (!reviewToDelete) return;
             
             try {
@@ -594,6 +623,8 @@
                     .from('reviews')
                     .delete()
                     .eq('id', reviewToDelete);
+
+                console.log('Delete error:', error);
 
                 if (error) throw error;
 
@@ -614,6 +645,7 @@
         });
 
         document.getElementById('cancelModalBtn').addEventListener('click', function() {
+            console.log('=== CANCEL MODAL CLICKED ===');
             document.getElementById('deleteModal').classList.remove('show');
             reviewToDelete = null;
         });
@@ -652,6 +684,7 @@
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('=== FORM SUBMIT ===');
 
             const editingId = document.getElementById('editingReviewId').value;
             const safetyRating = document.getElementById('safetyRating').value;
@@ -659,6 +692,9 @@
             const reviewText = document.getElementById('reviewText').value;
             const separatePrep = document.getElementById('separatePrep').checked;
             const staffKnowledge = document.getElementById('staffKnowledge').checked;
+
+            console.log('Editing ID:', editingId);
+            console.log('Safety:', safetyRating, 'Taste:', tasteRating);
 
             if (!safetyRating || !tasteRating) {
                 showToast('Please select both safety and taste ratings', 'error');
@@ -679,19 +715,23 @@
                     staff_knowledgeable: staffKnowledge
                 };
 
+                console.log('Review data:', reviewData);
+
                 let error;
                 if (editingId) {
-                    console.log('Updating review:', editingId, reviewData);
+                    console.log('Updating review:', editingId);
                     ({ error } = await client
                         .from('reviews')
                         .update(reviewData)
                         .eq('id', editingId));
                 } else {
-                    console.log('Inserting review:', reviewData);
+                    console.log('Inserting new review');
                     ({ error } = await client
                         .from('reviews')
                         .insert([reviewData]));
                 }
+
+                console.log('Submit error:', error);
 
                 if (error) throw error;
 
