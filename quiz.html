@@ -213,6 +213,7 @@
         let currentQuestion = 0;
         let answers = [];
         let questions = [];
+        let selectedAnswer = null;
 
         client.auth.getSession().then(({ data: { session } }) => {
             if (!session) {
@@ -225,19 +226,33 @@
 
         async function loadQuiz() {
             try {
+                console.log('Loading quiz questions...');
+                
                 const { data, error } = await client
                     .from('quiz_questions')
                     .select('*')
-                    .order('id');
+                    .order('id', { ascending: true });
+
+                console.log('Quiz data:', data);
+                console.log('Quiz error:', error);
 
                 if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    throw new Error('No quiz questions found');
+                }
 
                 questions = data;
                 showToast('Quiz loaded! Good luck!', 'info');
                 showQuestion();
 
             } catch (error) {
+                console.error('Error loading quiz:', error);
                 showToast('Error loading quiz: ' + error.message, 'error');
+                document.getElementById('quizContent').innerHTML = `
+                    <p style="color:#F44336;">Error: ${error.message}</p>
+                    <button onclick="window.location.href='restaurants.html'">Back to Restaurants</button>
+                `;
             }
         }
 
@@ -251,41 +266,42 @@
             const progress = ((currentQuestion / questions.length) * 100);
             document.getElementById('progressBar').style.width = progress + '%';
 
-            const options = [
-                question.option_a,
-                question.option_b,
-                question.option_c,
-                question.option_d
-            ];
+            console.log('Current question:', question);
 
             document.getElementById('quizContent').innerHTML = `
                 <div class="question-card">
                     <div class="question-number">Question ${currentQuestion + 1} of ${questions.length}</div>
-                    <div class="question-text">${question.question_text}</div>
-                    ${options.map((opt, i) => `
-                        <div class="answer-option" onclick="selectAnswer('${String.fromCharCode(97 + i)}')">
-                            ${opt}
-                        </div>
-                    `).join('')}
+                    <div class="question-text">${question.question_text || 'Question text missing'}</div>
+                    <div class="answer-option" data-answer="a">${question.option_a || 'Option A'}</div>
+                    <div class="answer-option" data-answer="b">${question.option_b || 'Option B'}</div>
+                    <div class="answer-option" data-answer="c">${question.option_c || 'Option C'}</div>
+                    <div class="answer-option" data-answer="d">${question.option_d || 'Option D'}</div>
                 </div>
                 <button onclick="nextQuestion()" id="nextBtn" disabled>Next Question</button>
             `;
-        }
 
-        function selectAnswer(answer) {
-            answers[currentQuestion] = answer;
-            
+            // Add click handlers to answer options
             document.querySelectorAll('.answer-option').forEach(opt => {
-                opt.classList.remove('selected');
+                opt.addEventListener('click', function() {
+                    selectedAnswer = this.getAttribute('data-answer');
+                    
+                    document.querySelectorAll('.answer-option').forEach(o => {
+                        o.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    
+                    document.getElementById('nextBtn').disabled = false;
+                });
             });
-            event.target.classList.add('selected');
-            
-            document.getElementById('nextBtn').disabled = false;
         }
 
         function nextQuestion() {
-            currentQuestion++;
-            showQuestion();
+            if (selectedAnswer) {
+                answers[currentQuestion] = selectedAnswer;
+                selectedAnswer = null;
+                currentQuestion++;
+                showQuestion();
+            }
         }
 
         async function submitQuiz() {

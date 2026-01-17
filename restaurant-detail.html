@@ -117,6 +117,7 @@
         .review-card {
             background: #F8F9FA;
             padding: 20px;
+            padding-right: 100px;
             border-radius: 8px;
             margin-bottom: 15px;
             position: relative;
@@ -143,17 +144,14 @@
             transform: scale(1.1);
         }
         .review-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
             margin-bottom: 15px;
-            padding-right: 80px;
         }
         .reviewer-name {
             display: flex;
             align-items: center;
             gap: 8px;
             font-weight: 600;
+            margin-bottom: 10px;
         }
         .verified-badge {
             background: #E8F5E9;
@@ -255,9 +253,14 @@
             background: #F44336;
             color: white;
         }
+        .btn-cancel-modal {
+            background: #E0E0E0;
+            color: #1A1A1A;
+        }
         .btn-cancel {
             background: #E0E0E0;
             color: #1A1A1A;
+            margin-left: 10px;
         }
     </style>
 </head>
@@ -268,8 +271,8 @@
             <h3 style="margin-bottom:10px;">Delete Review?</h3>
             <p style="color:#616161;margin-bottom:20px;">Are you sure you want to delete this review? This action cannot be undone.</p>
             <div class="modal-buttons">
-                <button class="btn-danger" onclick="confirmDelete()">Delete</button>
-                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn-danger" id="confirmDeleteBtn">Delete</button>
+                <button class="btn-cancel-modal" id="cancelModalBtn">Cancel</button>
             </div>
         </div>
     </div>
@@ -352,7 +355,7 @@
                 </div>
                 
                 <button type="submit" id="submitBtn">Submit Review</button>
-                <button type="button" id="cancelBtn" class="btn-cancel" onclick="cancelEdit()" style="margin-left:10px;display:none;">Cancel</button>
+                <button type="button" id="cancelBtn" class="btn-cancel" style="display:none;">Cancel</button>
             </form>
         </div>
     </div>
@@ -390,6 +393,7 @@
         let tasteRatingValue = 0;
         let reviewToDelete = null;
 
+        // Get user session
         client.auth.getSession().then(({ data: { session } }) => {
             if (!session) {
                 window.location.href = 'login.html';
@@ -399,6 +403,7 @@
             }
         });
 
+        // Get restaurant ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         restaurantId = urlParams.get('id');
 
@@ -473,8 +478,8 @@
                         const isOwner = review.user_id === userId;
                         const actions = isOwner ? `
                             <div class="review-actions">
-                                <button class="btn-icon" onclick="editReview('${review.id}')" title="Edit">✏️</button>
-                                <button class="btn-icon" onclick="deleteReview('${review.id}')" title="Delete">🗑️</button>
+                                <button class="btn-icon" onclick="window.editReviewGlobal('${review.id}')" title="Edit">✏️</button>
+                                <button class="btn-icon" onclick="window.deleteReviewGlobal('${review.id}')" title="Delete">🗑️</button>
                             </div>
                         ` : '';
                         
@@ -482,15 +487,13 @@
                             <div class="review-card" id="review-${review.id}">
                                 ${actions}
                                 <div class="review-header">
-                                    <div>
-                                        <div class="reviewer-name">
-                                            <strong>${profile.first_name}</strong>
-                                            ${verifiedBadge}
-                                        </div>
-                                        <div class="review-ratings" style="margin-top:10px;">
-                                            <span style="font-size:14px;">🛡️ Safety: <strong style="color:#1B5E20;">${review.safety_rating}/5</strong></span>
-                                            <span style="font-size:14px;">⭐ Taste: <strong style="color:#1B5E20;">${review.taste_rating}/5</strong></span>
-                                        </div>
+                                    <div class="reviewer-name">
+                                        <strong>${profile.first_name}</strong>
+                                        ${verifiedBadge}
+                                    </div>
+                                    <div class="review-ratings">
+                                        <span style="font-size:14px;">🛡️ Safety: <strong style="color:#1B5E20;">${review.safety_rating}/5</strong></span>
+                                        <span style="font-size:14px;">⭐ Taste: <strong style="color:#1B5E20;">${review.taste_rating}/5</strong></span>
                                     </div>
                                 </div>
                                 <p style="color:#1A1A1A;line-height:1.6;margin:15px 0;">${review.review_text}</p>
@@ -508,7 +511,9 @@
             }
         }
 
-        async function editReview(reviewId) {
+        // Make functions globally accessible
+        window.editReviewGlobal = async function(reviewId) {
+            console.log('Edit clicked for review:', reviewId);
             try {
                 const { data: review, error } = await client
                     .from('reviews')
@@ -517,6 +522,8 @@
                     .single();
 
                 if (error) throw error;
+
+                console.log('Review data loaded:', review);
 
                 document.getElementById('formTitle').textContent = 'Edit Your Review';
                 document.getElementById('editingReviewId').value = reviewId;
@@ -534,9 +541,16 @@
                 showToast('Editing review', 'success');
 
             } catch (error) {
+                console.error('Error in editReview:', error);
                 showToast('Error loading review: ' + error.message, 'error');
             }
-        }
+        };
+
+        window.deleteReviewGlobal = function(reviewId) {
+            console.log('Delete clicked for review:', reviewId);
+            reviewToDelete = reviewId;
+            document.getElementById('deleteModal').classList.add('show');
+        };
 
         function setStarRating(containerId, inputId, rating, ratingVar) {
             if (ratingVar === 'safety') {
@@ -557,7 +571,7 @@
             });
         }
 
-        function cancelEdit() {
+        document.getElementById('cancelBtn').addEventListener('click', function() {
             document.getElementById('formTitle').textContent = 'Write a Review';
             document.getElementById('editingReviewId').value = '';
             document.getElementById('reviewForm').reset();
@@ -569,14 +583,10 @@
             tasteRatingValue = 0;
             
             showToast('Edit cancelled', 'success');
-        }
+        });
 
-        function deleteReview(reviewId) {
-            reviewToDelete = reviewId;
-            document.getElementById('deleteModal').classList.add('show');
-        }
-
-        async function confirmDelete() {
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+            console.log('Confirm delete for:', reviewToDelete);
             if (!reviewToDelete) return;
             
             try {
@@ -587,23 +597,26 @@
 
                 if (error) throw error;
 
+                console.log('Delete successful');
                 showToast('Review deleted successfully!', 'success');
-                closeModal();
+                document.getElementById('deleteModal').classList.remove('show');
+                reviewToDelete = null;
                 
                 setTimeout(() => {
                     loadReviews();
                 }, 500);
 
             } catch (error) {
+                console.error('Error deleting review:', error);
                 showToast('Error deleting review: ' + error.message, 'error');
-                closeModal();
+                document.getElementById('deleteModal').classList.remove('show');
             }
-        }
+        });
 
-        function closeModal() {
+        document.getElementById('cancelModalBtn').addEventListener('click', function() {
             document.getElementById('deleteModal').classList.remove('show');
             reviewToDelete = null;
-        }
+        });
 
         function setupStarRating(containerId, inputId, ratingVar) {
             const container = document.getElementById(containerId);
@@ -668,11 +681,13 @@
 
                 let error;
                 if (editingId) {
+                    console.log('Updating review:', editingId, reviewData);
                     ({ error } = await client
                         .from('reviews')
                         .update(reviewData)
                         .eq('id', editingId));
                 } else {
+                    console.log('Inserting review:', reviewData);
                     ({ error } = await client
                         .from('reviews')
                         .insert([reviewData]));
@@ -682,13 +697,22 @@
 
                 showToast(editingId ? 'Review updated successfully!' : 'Review submitted successfully!', 'success');
                 
-                cancelEdit();
+                // Reset form
+                document.getElementById('formTitle').textContent = 'Write a Review';
+                document.getElementById('editingReviewId').value = '';
+                document.getElementById('reviewForm').reset();
+                document.getElementById('submitBtn').textContent = 'Submit Review';
+                document.getElementById('cancelBtn').style.display = 'none';
+                document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+                safetyRatingValue = 0;
+                tasteRatingValue = 0;
                 
                 setTimeout(() => {
                     loadReviews();
                 }, 500);
 
             } catch (error) {
+                console.error('Error submitting review:', error);
                 showToast(error.message, 'error');
             } finally {
                 submitBtn.disabled = false;
