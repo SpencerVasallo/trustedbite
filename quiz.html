@@ -305,29 +305,19 @@
             const passed = score >= 80;
 
             try {
-                console.log('Attempting to save quiz results for userId:', userId);
-                console.log('Data:', { is_verified: passed, quiz_score: score });
-
-                const { data, error } = await client
+                // Only update is_verified, not quiz_score
+                const { error } = await client
                     .from('profiles')
                     .update({
-                        is_verified: passed,
-                        quiz_score: score
+                        is_verified: passed
                     })
-                    .eq('id', userId)
-                    .select();
+                    .eq('id', userId);
 
-                console.log('Supabase response - data:', data, 'error:', error);
-
-                if (error) {
-                    console.error('Full error object:', JSON.stringify(error, null, 2));
-                    throw error;
-                }
+                if (error) throw error;
 
                 showResults(score, passed, correctCount, questions.length);
 
             } catch (error) {
-                console.error('Caught error:', error);
                 showToast('Error saving results: ' + error.message, 'error');
             }
         }
