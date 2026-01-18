@@ -257,6 +257,182 @@
         .toast.removing {
             animation: slideOut 0.3s ease-in forwards;
         }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                background: #f5f5f5;
+                margin: 0;
+                padding: 0;
+            }
+
+            .container-wide {
+                margin: 0;
+                padding: 20px;
+                border-radius: 0;
+                box-shadow: none;
+                min-height: 100vh;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+                margin: 0;
+            }
+
+            .header .subtitle {
+                font-size: 14px;
+                color: #616161;
+                margin: 5px 0 0 0;
+            }
+
+            .header-buttons {
+                width: 100%;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .header-buttons a,
+            .header-buttons button {
+                width: 100%;
+                text-align: center;
+                padding: 14px 20px;
+                min-height: 48px;
+                box-sizing: border-box;
+                font-size: 16px;
+            }
+
+            .search-filters {
+                padding: 15px;
+            }
+
+            .search-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .search-input {
+                padding: 14px;
+                font-size: 16px;
+                min-height: 48px;
+            }
+
+            .btn-search {
+                width: 100%;
+                padding: 14px;
+                min-height: 48px;
+                font-size: 16px;
+            }
+
+            .filters-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .filter-checkbox {
+                padding: 12px 15px;
+                min-height: 48px;
+                font-size: 14px;
+            }
+
+            .filter-checkbox input {
+                width: 20px;
+                height: 20px;
+            }
+
+            .restaurant-card {
+                padding: 15px;
+                padding-right: 15px;
+                padding-bottom: 60px;
+            }
+
+            .restaurant-card h3 {
+                font-size: 18px;
+                padding-right: 70px;
+            }
+
+            .restaurant-card p {
+                font-size: 13px;
+            }
+
+            .restaurant-actions {
+                top: auto;
+                bottom: 15px;
+                right: 15px;
+            }
+
+            .btn-icon {
+                padding: 10px 14px;
+                font-size: 18px;
+                min-width: 44px;
+                min-height: 44px;
+            }
+
+            .restaurant-ratings {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .badge {
+                font-size: 11px;
+                padding: 5px 10px;
+            }
+
+            /* Modal mobile */
+            .modal-content {
+                margin: 20px;
+                padding: 20px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
+
+            .modal-buttons button {
+                min-height: 48px;
+                font-size: 16px;
+            }
+
+            /* Toast mobile */
+            #toast-container {
+                left: 10px;
+                right: 10px;
+                top: 10px;
+            }
+
+            .toast {
+                min-width: auto;
+                width: 100%;
+            }
+        }
+
+        /* Small mobile (320px - 480px) */
+        @media (max-width: 480px) {
+            .container-wide {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .restaurant-card h3 {
+                font-size: 16px;
+            }
+
+            .badge {
+                display: block;
+                margin-bottom: 5px;
+            }
+        }
     </style>
 </head>
 <body>

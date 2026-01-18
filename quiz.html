@@ -163,6 +163,98 @@
         .toast.removing {
             animation: slideOut 0.3s ease-in forwards;
         }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                padding: 20px;
+                border-radius: 0;
+                box-shadow: none;
+                min-height: 100vh;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .back-link {
+                font-size: 16px;
+                padding: 10px 0;
+            }
+
+            .question-text {
+                font-size: 16px;
+                line-height: 1.5;
+            }
+
+            .answer-option {
+                padding: 16px;
+                font-size: 15px;
+                min-height: 48px;
+            }
+
+            button {
+                min-height: 48px;
+                font-size: 16px;
+            }
+
+            .result-card {
+                padding: 20px;
+            }
+
+            .result-icon {
+                font-size: 60px;
+            }
+
+            .result-score {
+                font-size: 40px;
+            }
+
+            .result-message {
+                font-size: 16px;
+            }
+
+            /* Toast mobile */
+            #toast-container {
+                left: 10px;
+                right: 10px;
+                top: 10px;
+            }
+
+            .toast {
+                min-width: auto;
+                width: 100%;
+            }
+        }
+
+        /* Small mobile (320px - 480px) */
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .question-text {
+                font-size: 15px;
+            }
+
+            .answer-option {
+                padding: 14px;
+                font-size: 14px;
+            }
+
+            .result-icon {
+                font-size: 50px;
+            }
+
+            .result-score {
+                font-size: 36px;
+            }
+        }
     </style>
 </head>
 <body>
