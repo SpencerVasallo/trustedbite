@@ -290,7 +290,8 @@
                     ({ error } = await client
                         .from('restaurants')
                         .update(restaurantData)
-                        .eq('id', editingId));
+                        .eq('id', editingId)
+                        .eq('user_id', userId));
                 } else {
                     ({ error } = await client
                         .from('restaurants')
