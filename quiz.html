@@ -296,7 +296,8 @@
             
             let correctCount = 0;
             questions.forEach((q, i) => {
-                if (answers[i] === q.correct_answer) {
+                // Convert both to uppercase for comparison
+                if (answers[i] && answers[i].toUpperCase() === q.correct_answer.toUpperCase()) {
                     correctCount++;
                 }
             });
@@ -305,7 +306,6 @@
             const passed = score >= 80;
 
             try {
-                // Only update is_verified, not quiz_score
                 const { error } = await client
                     .from('profiles')
                     .update({
