@@ -307,11 +307,11 @@
             try {
                 const { error } = await client
                     .from('profiles')
-                    .update({
+                    .upsert({
+                        id: userId,
                         is_verified: passed,
                         quiz_score: score
-                    })
-                    .eq('id', userId);
+                    }, { onConflict: 'id' });
 
                 if (error) throw error;
 
