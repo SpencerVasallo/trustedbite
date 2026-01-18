@@ -622,7 +622,8 @@
                 const { error } = await client
                     .from('reviews')
                     .delete()
-                    .eq('id', reviewToDelete);
+                    .eq('id', reviewToDelete)
+                    .eq('user_id', userId);
 
                 console.log('Delete error:', error);
 
@@ -723,7 +724,8 @@
                     ({ error } = await client
                         .from('reviews')
                         .update(reviewData)
-                        .eq('id', editingId));
+                        .eq('id', editingId)
+                        .eq('user_id', userId));
                 } else {
                     console.log('Inserting new review');
                     ({ error } = await client
